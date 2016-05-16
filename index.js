@@ -2,5 +2,9 @@
 'use strict';
 
 module.exports = {
-  name: 'ember-enum'
+  name: 'ember-enum',
+
+  isDevelopingAddon: function() {
+    return true;
+  }
 };

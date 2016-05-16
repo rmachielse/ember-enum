@@ -1,26 +1,59 @@
-# Ember-enum
+# Ember Enum
 
-This README outlines the details of collaborating on this Ember addon.
+[![Build Status](https://travis-ci.org/rmachielse/ember-enum.svg?branch=master)](https://travis-ci.org/rmachielse/ember-enum)
+
+This addon provides a very simple abstraction to use enum attributes with ember data.
 
 ## Installation
 
-* `git clone` this repository
-* `npm install`
-* `bower install`
+```
+ember install ember-enum
+```
 
-## Running
+## Usage
 
-* `ember server`
-* Visit your app at http://localhost:4200.
+You can define an enum attribute as follows:
 
-## Running Tests
+```javascript
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 
-* `npm test` (Runs `ember try:testall` to test your addon against multiple Ember versions)
-* `ember test`
-* `ember test --server`
+export default Model.extend({
+  status: attr('enum', {
+    options: [
+      'started',
+      'stopped'
+    ],
+    defaultValue: 'started'
+  })
+});
+```
 
-## Building
+The value from the json response is expected to be a string.
+Now you can use the attribute in templates:
 
-* `ember build`
+```handlebars
+{{model.status.value}}
+```
 
-For more information on using ember-cli, visit [http://ember-cli.com/](http://ember-cli.com/).
+You can also use boolean methods to check if the enum has a certain value:
+
+```handlebars
+{{#if model.status.isStarted}}
+  Started!
+{{/if}}
+```
+
+You can use a select element as follow:
+
+```handlebars
+{{view 'select' content=model.status.options value=model.status.value}}
+```
+
+## Limitations
+
+This project only works with ember-data 2.5 and higher.
+
+## License
+
+This project is released under the [MIT License](LICENSE.md).
