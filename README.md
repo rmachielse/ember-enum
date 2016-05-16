@@ -44,7 +44,7 @@ You can also use boolean methods to check if the enum has a certain value:
 {{/if}}
 ```
 
-You can use a select element as follow:
+You can use a select element like this:
 
 ```handlebars
 {{view 'select' content=model.status.options value=model.status.value}}

@@ -33,3 +33,14 @@ install:
 
 script:
   - ember try $EMBER_TRY_SCENARIO test
+
+notifications:
+  email: false
+
+deploy:
+  provider: script
+  script: ember deploy production
+  skip_cleanup: true
+  on:
+    condition: $EMBER_TRY_SCENARIO = default
+    tags: true
