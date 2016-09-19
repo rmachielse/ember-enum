@@ -1,8 +1,8 @@
 import Ember from 'ember';
 
-const { on, observer, computed: { equal } } = Ember;
+const { Object: EmberObject, on, observer, computed: { equal } } = Ember;
 
-export default Ember.Object.extend({
+export default EmberObject.extend({
   options: [],
 
   value: null,
