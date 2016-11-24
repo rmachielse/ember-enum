@@ -11,7 +11,8 @@
     "start": "ember server",
     "test": "ember try:each"
   },
-  "repository": "",
+  "homepage": "https://github.com/rmachielse/ember-enum",
+  "repository": "https://github.com/rmachielse/ember-enum.git",
   "engines": {
     "node": ">= 0.12.0"
   },
