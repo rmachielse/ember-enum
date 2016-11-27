@@ -1,7 +1,7 @@
 {
   "name": "ember-enum",
   "version": "0.1.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "description": "This addon provides a very simple abstraction to use enum attributes with ember data.",
   "directories": {
     "doc": "doc",
     "test": "tests"

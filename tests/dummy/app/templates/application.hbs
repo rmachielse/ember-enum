@@ -5,4 +5,74 @@
       This addon provides a very simple abstraction to use enum attributes with ember data.
     </p>
   </div>
+
+  <h3>Setting</h3>
+  <div class="row">
+    <div class="col-md-6 col-xs-12">
+      <pre>
+  &lt;select value=&#123;&#123;model.status.value&#125;&#125; onchange=&#123;&#123;action (mut model.status.value) value="target.value"&#125;&#125;&gt;
+    &#123;&#123;#each model.status.options as |option|&#125;&#125;
+      &lt;option value=&#123;&#123;option&#125;&#125;&gt;&#123;&#123;option&#125;&#125;&lt;/option&gt;
+    &#123;&#123;/each&#125;&#125;
+  &lt;/select&gt;
+      </pre>
+    </div>
+    <div class="col-md-6 col-xs-12">
+      <select value={{model.status.value}} onchange={{action (mut model.status.value) value="target.value"}}>
+        {{#each model.status.options as |option|}}
+          <option value={{option}}>{{option}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </div>
+
+  <h3>Getting</h3>
+  <div class="row">
+    <div class="col-md-6 col-xs-12">
+      <pre>
+  value: &#123;&#123;model.status.value&#125;&#125;
+  isPending: &#123;&#123;model.status.isPending&#125;&#125;
+  isAccepted: &#123;&#123;model.status.isAccepted&#125;&#125;
+  isRejected: &#123;&#123;model.status.isRejected&#125;&#125;
+      </pre>
+    </div>
+    <div class="col-md-6 col-xs-12">
+      <table class="table">
+        <tbody>
+          <tr>
+            <th>
+              value
+            </th>
+            <td>
+              {{model.status.value}}
+            </td>
+          </tr>
+          <tr>
+            <th>
+              isPending
+            </th>
+            <td>
+              {{model.status.isPending}}
+            </td>
+          </tr>
+          <tr>
+            <th>
+              isAccepted
+            </th>
+            <td>
+              {{model.status.isAccepted}}
+            </td>
+          </tr>
+          <tr>
+            <th>
+              isRejected
+            </th>
+            <td>
+              {{model.status.isRejected}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

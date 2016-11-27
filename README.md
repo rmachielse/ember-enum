@@ -1,6 +1,7 @@
 # Ember Enum
 
 [![Build Status](https://travis-ci.org/rmachielse/ember-enum.svg?branch=master)](https://travis-ci.org/rmachielse/ember-enum)
+[![Ember Observer Score](https://emberobserver.com/badges/ember-enum.svg)](https://emberobserver.com/addons/ember-enum)
 
 This addon provides a very simple abstraction to use enum attributes with ember data.
 
@@ -47,7 +48,11 @@ You can also use boolean methods to check if the enum has a certain value:
 You can use a select element like this:
 
 ```handlebars
-{{view 'select' content=model.status.options value=model.status.value}}
+<select value={{model.status.value}} onchange={{action (mut model.status.value) value="target.value"}}>
+  {{#each model.status.options as |option|}}
+    <option value={{option}}>{{option}}</option>
+  {{/each}}
+</select>
 ```
 
 ## Limitations

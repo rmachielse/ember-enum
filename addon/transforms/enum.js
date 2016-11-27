@@ -1,17 +1,22 @@
 import Transform from 'ember-data/transform';
 import Enum from 'ember-enum/enum';
+import Ember from 'ember';
+
+const { typeOf } = Ember;
 
 export default Transform.extend({
-  deserialize(serialized, attributeMeta) {
+  deserialize(serialized, { options = [], defaultValue = null } = {}) {
     return Enum.create({
-      value: serialized || attributeMeta.defaultValue,
-      options: attributeMeta.options
+      value: serialized || defaultValue,
+      options
     });
   },
 
   serialize(deserialized) {
-    if (deserialized) {
+    if (typeOf(deserialized) === 'instance') {
       return deserialized.get('value');
+    } else {
+      return deserialized;
     }
   }
 });
