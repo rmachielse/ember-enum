@@ -6,11 +6,9 @@ const {
   Error: EmberError,
   assert,
   isArray,
+  isPresent,
   isNone
 } = Ember;
-
-const ENUM_OPTIONS_MUST_BE_DEFINED = `ENUM ERROR: when using the enum data type,
-you must define the 'options' array.`;
 
 // TODO: use Ember container to register and lookup Enum definitions
 // registration should be done at initialization time.
@@ -18,9 +16,11 @@ const ENUM_TYPE_MAP = {};
 
 const EnumRegistry = {
   /**
+   lookup the Enum Type class
+
     @method lookup
-    @param {String} enumTypeName name of EnumType
-    @return {Class} EnumType registered for name
+    @param {String} name name of Enum Type
+    @return {Class} Enum Type registered for name
     @public
   */
   lookup(name) {
@@ -28,6 +28,9 @@ const EnumRegistry = {
   },
 
   /**
+    Register the Enum Type on the Enum Type Map for use across the
+    application.
+
     @method register
     @param {String} name the name to register the enum
     @param {Class} EnumType The EnumType class that you want to register under the name
@@ -35,39 +38,94 @@ const EnumRegistry = {
     @public
   */
   register(name, EnumType) {
-    if (arguments.length === 1 || isNone(name)) {
-      EnumType = name;
-      let { options, defaultValue } = EnumType.create().getProperties('options', 'defaultValue');
-      name = this._generateName(options, defaultValue);
+    if (isNone(name)) {
+      throwEnumError(UNDEFINED_NAME);
+    }
+
+    if (isNone(EnumType)) {
+      throwEnumError(UNDEFINED_TYPE);
     }
 
     if (ENUM_TYPE_MAP[name]) {
-      throw new EmberError(`Enum Type with name ${name} already exists.`);
+      throwEnumError(`Enum Type with name ${name} already exists.`);
     }
 
-    ENUM_TYPE_MAP[name] = EnumType;
-    return ENUM_TYPE_MAP[name];
+    return ENUM_TYPE_MAP[name] = EnumType;
   },
 
   /**
-    Generates the class (EnumType) based on the options and default value passed.
+    Public Interface looking up an Enum Type Class and generating one if it
+    does not exist.
 
-    @method generateEnumType
-    @param {String} value current value of the EnumType
+    This method should only be used as a building block for an abstraction,
+    where you want to generate dynamic types without explicit definition.
+    Examples may be a computed property or transform.
+
+    Opt for defining the Enum Types and using `register` and `lookup` where
+    possible.
+
+    @method enumFactoryFor
+    @param {String} name name of Enum Type you are looking up
+    @param {Array} options array of possible values for the Enum Type
+    @param {String} defaultValue default value for the Enum Type
+    @return {Class} Class definition for Enum Type
+    @public
+  */
+  enumFactoryFor(name, options, defaultValue) {
+    let EnumType;
+    let needsVerification = isPresent(name) && isPresent(options);
+
+    if (!name) {
+      name = this._generateName(options, defaultValue);
+    }
+
+    EnumType = this.lookup(name);
+
+    if (EnumType) {
+      if (needsVerification) {
+        this._verifyEnumSignature(EnumType, options, defaultValue);
+      }
+      return EnumType;
+    }
+    EnumType = this._generateEnumFactory(options, defaultValue);
+    return this.register(name, EnumType);
+  },
+
+  /**
+    Generates the Enum Type class based on the options and default value passed.
+
+    @method _generateEnumFactory
     @param {Array} options array of possible values for the EnumType
     @param {String} defaultValue default value for the EnumType
     @return {Class} Class definition for EnumType
     @private
   */
-  generateEnumType(options, defaultValue, enumTypeName) {
-    enumTypeName = enumTypeName || this._generateName(options, defaultValue);
-    let EnumType = this.lookup(enumTypeName);
+  _generateEnumFactory(options, defaultValue) {
+    assert(ENUM_OPTIONS_MUST_BE_DEFINED, isArray(options));
+    defaultValue = defaultValue || options[0];
 
-    if (EnumType) {
-      return EnumType;
-    }
+    return Enum.extend({
+      defaultValue: computed(function() {
+        return defaultValue;
+      }).readOnly(),
+      options: computed(function() {
+        return options;
+      }).readOnly()
+    });
+  },
 
-    return this.register(enumTypeName, _defineEnumType(options, defaultValue));
+  /**
+    @method _verifyEnumSignature
+    @param {Class} Class definition for Enum Type
+    @param {Array} options array of possible values for the EnumType
+    @param {String} defaultValue default value for the EnumType
+    @private
+  */
+  _verifyEnumSignature(EnumType, options, defaultValue) {
+    let attrs = EnumType.create().getProperties('options', 'defaultValue');
+    let enumAName = this._generateName(attrs.options, attrs.defaultValue);
+    let enumBName = this._generateName(options, defaultValue);
+    assert(ENUM_NAME_MISMATCH, enumAName === enumBName);
   },
 
   /**
@@ -83,23 +141,24 @@ const EnumRegistry = {
     @private
   */
   _generateName(options, defaultValue) {
+    assert(ENUM_OPTIONS_MUST_BE_DEFINED, isArray(options));
     let flattenedStringOptions = options.join('-');
     return `${flattenedStringOptions}-default:${defaultValue}`;
   }
 };
 
-function _defineEnumType(options, defaultValue) {
-  assert(ENUM_OPTIONS_MUST_BE_DEFINED, isArray(options));
-  defaultValue = defaultValue || options[0];
-
-  return Enum.extend({
-    defaultValue: computed(function() {
-      return defaultValue;
-    }).readOnly(),
-    options: computed(function() {
-      return options;
-    }).readOnly()
-  });
+function throwEnumError(msg) {
+  throw new EmberError(`ENUM ERROR: ${msg}`);
 }
+
+const ENUM_OPTIONS_MUST_BE_DEFINED = `when using the Enum data type,
+you must define the 'options' array.`;
+
+const ENUM_NAME_MISMATCH = `You have already defined an Enum Type with the same
+name that has different options or defaultValue. Please choose a different name
+or allow the name to be generated.`;
+
+const UNDEFINED_NAME = `cannot register an Enum Type with an undefined name.`;
+const UNDEFINED_TYPE = `cannot register an Enum Type with only a name.`;
 
 export default EnumRegistry;

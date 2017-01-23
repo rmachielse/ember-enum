@@ -1,5 +1,5 @@
 import computed from 'ember-computed';
-import createEnumType from 'ember-enum/utils/create-enum-type';
+import EnumRegistry from 'ember-enum/enum-registry';
 
 export function computedPropertyFromEnum(enumObject) {
   return computed({
@@ -17,7 +17,7 @@ export function computedPropertyFromEnum(enumObject) {
 }
 
 export default function enumAttr({ name, options, defaultValue }) {
-  let EnumType   = createEnumType(options, defaultValue, name);
+  let EnumType   = EnumRegistry.enumFactoryFor(name, options, defaultValue);
   let enumObject = EnumType.create();
   return computedPropertyFromEnum(enumObject);
 }

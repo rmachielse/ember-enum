@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import Transform from 'ember-data/transform';
-import createEnumType from 'ember-enum/utils/create-enum-type';
+import EnumRegistry from 'ember-enum/enum-registry';
 import { ERROR_MESSAGES } from 'ember-enum/enum';
 import { computedPropertyFromEnum } from 'ember-enum/computed/enum-attr';
 
@@ -20,7 +20,7 @@ function warnIncorrectValue(options) {
 
 export default Transform.extend({
   deserialize(serialized, { name, options, defaultValue }) {
-    let EnumType   = createEnumType(options, defaultValue, name);
+    let EnumType   = EnumRegistry.enumFactoryFor(name, options, defaultValue);
     let enumObject = EnumType.create();
     let value      = serialized;
 
