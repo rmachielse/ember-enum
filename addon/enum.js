@@ -1,23 +1,28 @@
 import Ember from 'ember';
+import computed from 'ember-computed';
 
 const {
   String: { camelize, capitalize },
-  computed: { equal },
   Object: EmberObject,
   A,
   assert,
-  computed,
   get,
   set
 } = Ember;
 
+const { readOnly, equal } = computed;
+
 /**
+  Enum Data Type
+
   @class Enum
   @extends Ember.Object
   @public
 */
 const Enum = EmberObject.extend({
   /**
+    Indicates whether the Enum is readOnly and value cannot be changed.
+
     @property readOnly
     @type Boolean
     @public
@@ -25,75 +30,53 @@ const Enum = EmberObject.extend({
   readOnly: false,
 
   /**
+    Array of whitelisted values. Must overwrite this when extending the class.
+
     @property options
     @type Array
     @required
+    @readOnly
     @public
   */
   options: computed(function() {
     return A();
-  }),
+  }).readOnly(),
 
   /**
+    Default value of the Enum.
+
     @property defaultValue
     @type String
+    @readOnly
     @public
   */
-  defaultValue: computed('_defaultValue', {
-    get() {
-      return get(this, '_defaultValue') || get(this, 'options')[0];
-    },
-
-    set(_key, value) {
-      set(this, '_defaultValue', value);
-      return value;
-    }
-  }),
+  defaultValue: readOnly('options.firstObject'),
 
   /**
+    String represenation of the Enum value.
+
     @property value
     @type String
     @public
   */
-  value: computed('_value', {
+  value: computed({
     get() {
-      return get(this, '_value') || get(this, 'defaultValue');
+      return get(this, 'defaultValue');
     },
 
     set(_key, value) {
       assert(`ENUM ERROR: ${VALUE_READ_ONLY}`, !get(this, 'readOnly'));
-      this._assertValidValue(value);
-      set(this, '_value', value);
+      assertValidValue(get(this, 'options'), value);
       return value;
     }
   }),
 
   /**
-    @property _defaultValue
-    @type String
-    @default null
-    @private
-  */
-  _defaultValue: null,
+    Returns whether or not the value is a valid member of the Enum.
 
-  /**
-    @property _value
-    @type String
-    @default null
-    @private
-  */
-  _value: null,
-
-  /**
-    @method toString
-    @public
-  */
-  toString() {
-    return this.get('value');
-  },
-
-  /**
     @method isValidOption
+    @param {String} value String represenation of the Enum value.
+    @return {Boolean} whether or not the value is a valid member of the Enum.
     @public
   */
   isValidOption(value) {
@@ -101,19 +84,45 @@ const Enum = EmberObject.extend({
   },
 
   /**
-    @method _assertValidValue
-    @private
+    returns the string representation of the enum value. Can be overwritten to
+    control what handlebars will render.
+
+    @method toString
+    @return {String} string representation of the enum value
+    @public
   */
-  _assertValidValue(value) {
-    let isValid = this.isValidOption(value);
-    if (isValid) {
-      return;
-    }
-    let errorMsg = `ENUM ERROR: ${INVALID_VALUE} `;
-    errorMsg += get(this, 'options').join(', ');
-    assert(errorMsg, isValid);
+  toString() {
+    return get(this, 'value');
+  },
+
+  /**
+    returns the string representation of the enum value. Can be overwritten to
+    control what is serialized to the server.
+
+    @method serialize
+    @public
+  */
+  serialize() {
+    return get(this, 'value');
   }
 });
+
+/**
+  asserts that the value is a member of the options.
+
+  @method assertValidValue
+  @param {Array} options array of possible values for the EnumType
+  @param {String} value value to assert that it is a member of options
+  @private
+*/
+function assertValidValue(options, value) {
+  if (options.includes(value)) {
+    return;
+  }
+  let errorMsg = `ENUM ERROR: ${INVALID_VALUE} `;
+  errorMsg += get(this, 'options').join(', ');
+  assert(errorMsg, false);
+}
 
 /**
   Defines attributes that offer a nice DSL for boolean checking of an EnumType
@@ -139,6 +148,7 @@ Enum.reopenClass({
     the options. This requires any mixins to be used first and the normal class
     definition passed last.
     @method extend
+    @override
     @public
   */
   extend(...args) {

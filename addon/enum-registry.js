@@ -1,6 +1,16 @@
 import Ember from 'ember';
+import computed from 'ember-computed';
+import Enum from 'ember-enum/enum';
 
-const { isNone } = Ember;
+const {
+  Error: EmberError,
+  assert,
+  isArray,
+  isNone
+} = Ember;
+
+const ENUM_OPTIONS_MUST_BE_DEFINED = `ENUM ERROR: when using the enum data type,
+you must define the 'options' array.`;
 
 // TODO: use Ember container to register and lookup Enum definitions
 // registration should be done at initialization time.
@@ -9,24 +19,12 @@ const ENUM_TYPE_MAP = {};
 const EnumRegistry = {
   /**
     @method lookup
-    @param {String} name the name to register the enum
+    @param {String} enumTypeName name of EnumType
     @return {Class} EnumType registered for name
     @public
   */
   lookup(name) {
     return ENUM_TYPE_MAP[name];
-  },
-
-  /**
-    @method lookupByGeneratedName
-    @param {Array} options
-    @param {String} defaultValue
-    @return {Class} EnumType registered for generated name
-    @public
-  */
-  lookupByGeneratedName(options, defaultValue) {
-    let name = this._generateName(options, defaultValue);
-    return this.lookup(name);
   },
 
   /**
@@ -44,11 +42,32 @@ const EnumRegistry = {
     }
 
     if (ENUM_TYPE_MAP[name]) {
-      throw new Error(`Enum Type with name ${name} already exists.`);
+      throw new EmberError(`Enum Type with name ${name} already exists.`);
     }
 
     ENUM_TYPE_MAP[name] = EnumType;
     return ENUM_TYPE_MAP[name];
+  },
+
+  /**
+    Generates the class (EnumType) based on the options and default value passed.
+
+    @method generateEnumType
+    @param {String} value current value of the EnumType
+    @param {Array} options array of possible values for the EnumType
+    @param {String} defaultValue default value for the EnumType
+    @return {Class} Class definition for EnumType
+    @private
+  */
+  generateEnumType(options, defaultValue, enumTypeName) {
+    enumTypeName = enumTypeName || this._generateName(options, defaultValue);
+    let EnumType = this.lookup(enumTypeName);
+
+    if (EnumType) {
+      return EnumType;
+    }
+
+    return this.register(enumTypeName, _defineEnumType(options, defaultValue));
   },
 
   /**
@@ -68,5 +87,19 @@ const EnumRegistry = {
     return `${flattenedStringOptions}-default:${defaultValue}`;
   }
 };
+
+function _defineEnumType(options, defaultValue) {
+  assert(ENUM_OPTIONS_MUST_BE_DEFINED, isArray(options));
+  defaultValue = defaultValue || options[0];
+
+  return Enum.extend({
+    defaultValue: computed(function() {
+      return defaultValue;
+    }).readOnly(),
+    options: computed(function() {
+      return options;
+    }).readOnly()
+  });
+}
 
 export default EnumRegistry;
