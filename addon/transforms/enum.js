@@ -1,22 +1,29 @@
-import Transform from 'ember-data/transform';
-import Enum from 'ember-enum/enum';
 import Ember from 'ember';
+import Transform from 'ember-data/transform';
+import createEnumType from 'ember-enum/utils/create-enum-type';
 
-const { typeOf } = Ember;
+const {
+  computed,
+  get,
+} = Ember;
+
+const ENUM_TYPE_MAP = {};
 
 export default Transform.extend({
   deserialize(serialized, { options = [], defaultValue = null } = {}) {
-    return Enum.create({
-      value: serialized || defaultValue,
-      options
+    const EnumType = createEnumType(serialized, options, defaultValue);
+
+    return computed({
+      get() {
+         return EnumType.create({ value: serialized, readOnly: true });
+      },
+      set(_key, value) {
+        return EnumType.create({ value, readOnly: true });
+      }
     });
   },
 
   serialize(deserialized) {
-    if (typeOf(deserialized) === 'instance') {
-      return deserialized.get('value');
-    } else {
-      return deserialized;
-    }
+    get(deserialized, 'value') || deserialized.toString();
   }
 });
