@@ -42,6 +42,48 @@ If not specified, and `value` is also undefined, then the value will default to
 the first option specified. This should also be one of the entries in the
 `options` array.
 
+#### `name` *Optional*
+
+This is the name of your enum. `name` will be generated for you if not provided
+and is currently used mostly for caching Enum Type Definitions.
+
+**Experimental**
+
+If you define your Enum Types elsewhere though and then register them to the
+enum registry, you don't need to define anything else other than the name and
+the enum type definition will be handled for you. This also allows for much more
+complex logic around rendering by overwriting `toString` and other extensions.
+
+```javascript
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import Enum from 'ember-enum/enum';
+import EnumRegistry from 'ember-enum/enum-registry';
+
+const EngineStateEnum = Enum.extend({
+  options: [
+    'started',
+    'stopped'
+  ],
+
+  defaultValue: 'stopped',
+
+  toString() {
+    return this.get('isStarted') ? 'Hear that baby purr!' : this.get('value');
+  }
+});
+
+// note that this is not done for you automatically *yet*
+EnumRegistry.register('engineState', EngineStateEnum);
+
+const Car = Model.extend({
+  status: attr('enum', { name: 'engineState' })
+});
+
+let car = store.createRecord({ status: 'started' });
+car.toString(); // => 'Hear that baby purr!'
+```
+
 ## Usage
 
 The value from the json response is expected to be a string that matches
