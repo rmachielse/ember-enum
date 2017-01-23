@@ -1,49 +1,16 @@
 import Ember from 'ember';
 import Enum from 'ember-enum/enum';
+import EnumRegistry from 'ember-enum/enum-registry';
 
 const {
-  String: { camelize, capitalize },
-  computed: { equal },
+  assert,
   computed,
-  set
+  isArray
 } = Ember;
 
-const ENUM_TYPE_MAP = {};
-
-/**
-  returns a cache key for a generated EnumType. This is used in conjunction
-  with ENUM_TYPE_MAP to ensure we are reducing unnecessary class definition
-  at runtime, as it is much slower than object creation.
-
-  @method generateEnumTypeCacheKey
-  @param {Array} options array of possible values for the EnumType
-  @param {String} defaultValue default value for the EnumType
-  @return {String} Cache Key for generating Enum Types. Cache key is essentially
-    option names separated by "-" and then "default:" with the default value.
-  @private
-*/
-function generateEnumTypeCacheKey(options, defaultValue) {
-  let flattenedStringOptions = options.join('-');
-  return `${flattenedStringOptions}-default:${defaultValue}`;
-}
-
-/**
-  Defines attributes that offer a nice DSL for boolean checking of an EnumType
-  value. A sorts of on-the-fly mixin gnerator
-
-  @method defineOptionBooleanAttrs
-  @param {Array} options array of possible values for the EnumType
-  @return {Object} Object with computed properties to mixin when extending the
-    Enum class.
-  @private
-*/
-function defineOptionBooleanAttrs(options) {
-  return options.reduce((attrs, option) => {
-    let enumOptionBooleanPropertyName = `is${capitalize(camelize(option))}`;
-    set(attrs, enumOptionBooleanPropertyName, equal('value', option));
-    return attrs;
-  }, {});
-}
+const ENUM_OPTIONS_MUST_BE_DEFINED = `ENUM ERROR: when using the enum data type,
+you must define the 'options' array in the options object passed to
+ember-data's 'attr' function.`;
 
 /**
   Generates the class (EnumType) based on the options and default value passed.
@@ -55,16 +22,35 @@ function defineOptionBooleanAttrs(options) {
   @return {Class} Class definition for EnumType
   @private
 */
-function _defineEnumType(value, options, defaultValue) {
-  let booleanAttrs = defineOptionBooleanAttrs(options);
+function _defineEnumType(value, options, defaultValue, enumTypeName) {
+  assert(ENUM_OPTIONS_MUST_BE_DEFINED, isArray(options));
 
-  return Enum.extend(Object.assign({
+  let EnumType = Enum.extend({
     defaultValue: defaultValue || options[0],
     options: computed(function() {
       return options;
     }),
     value: value || defaultValue || options[0]
-  }, booleanAttrs));
+  });
+  return EnumRegistry.register(enumTypeName, EnumType);
+}
+
+/**
+  Decides on and uses the correct lookup to use on the Enum Registry.
+
+  @method _lookupEnumType
+  @param {Array} options array of possible values for the EnumType
+  @param {String} defaultValue default value for the EnumType
+  @param {string} enumTypeName name of EnumType
+  @return {Class} Class definition for EnumType
+  @private
+*/
+function _lookupEnumType(options, defaultValue, enumTypeName) {
+  if (enumTypeName) {
+    return EnumRegistry.lookup(enumTypeName);
+  } else {
+    return EnumRegistry.lookupByGeneratedName(options, defaultValue);
+  }
 }
 
 /**
@@ -78,17 +64,20 @@ function _defineEnumType(value, options, defaultValue) {
   @param {String} value current value of the EnumType
   @param {Array} options array of possible values for the EnumType
   @param {String} defaultValue default value for the EnumType
+  @param {string} enumTypeName name of EnumType
   @return {Class} Class definition for EnumType
   @public
 */
-function createEnumType(value, options, defaultValue) {
-  let cacheKey = generateEnumTypeCacheKey(options, defaultValue);
-  if (!ENUM_TYPE_MAP[cacheKey]) {
-    ENUM_TYPE_MAP[cacheKey] = _defineEnumType(value, options, defaultValue);
+function createEnumType(value, options, defaultValue, enumTypeName) {
+  let EnumType = _lookupEnumType(options, defaultValue, enumTypeName);
+
+  if (EnumType) {
+    return EnumType;
   }
-  return ENUM_TYPE_MAP[cacheKey];
+
+  return _defineEnumType(value, options, defaultValue, enumTypeName);
 }
 
-export { createEnumType, ENUM_TYPE_MAP };
+export { createEnumType };
 
 export default createEnumType;

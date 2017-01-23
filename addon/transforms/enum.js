@@ -4,19 +4,13 @@ import { ERROR_MESSAGES } from 'ember-enum/enum';
 import createEnumType from 'ember-enum/utils/create-enum-type';
 
 const {
-  assert,
   computed,
   get,
-  isArray,
   warn
 } = Ember;
 
-const ENUM_OPTIONS_MUST_BE_DEFINED = `ENUM ERROR: when using the enum data type,
-you must define the 'options' array in the options object passed to
-ember-data's 'attr' function.`;
-
-const SERVER_RETURNED_INVALID_VALUE = `ENUM WARN: Server returned an invalid
-value for the enum. ${ERROR_MESSAGES.INVALID_VALUE}`;
+const SERVER_RETURNED_INVALID_VALUE = `ENUM WARN: Server returned an invalid value for the enum.
+${ERROR_MESSAGES.INVALID_VALUE}`;
 
 function warnIncorrectValue(options) {
   let errorMsg = SERVER_RETURNED_INVALID_VALUE;
@@ -28,10 +22,8 @@ function warnIncorrectValue(options) {
 }
 
 export default Transform.extend({
-  deserialize(serialized, { options, defaultValue }) {
-
-    assert(ENUM_OPTIONS_MUST_BE_DEFINED, isArray(options));
-    let EnumType   = createEnumType(serialized, options, defaultValue);
+  deserialize(serialized, { name, options, defaultValue }) {
+    let EnumType   = createEnumType(serialized, options, defaultValue, name);
     let enumObject = EnumType.create();
     let value      = serialized;
 
@@ -57,6 +49,8 @@ export default Transform.extend({
   },
 
   serialize(deserialized) {
-    return get(deserialized, 'value') || deserialized.toString() || deserialized;
+    if (deserialized) {
+      return get(deserialized, 'value');
+    }
   }
 });

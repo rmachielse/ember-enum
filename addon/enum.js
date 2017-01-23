@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
 const {
+  String: { camelize, capitalize },
+  computed: { equal },
   Object: EmberObject,
   A,
   assert,
@@ -25,6 +27,7 @@ const Enum = EmberObject.extend({
   /**
     @property options
     @type Array
+    @required
     @public
   */
   options: computed(function() {
@@ -109,6 +112,41 @@ const Enum = EmberObject.extend({
     let errorMsg = `ENUM ERROR: ${INVALID_VALUE} `;
     errorMsg += get(this, 'options').join(', ');
     assert(errorMsg, isValid);
+  }
+});
+
+/**
+  Defines attributes that offer a nice DSL for boolean checking of an EnumType
+  value. A sorts of on-the-fly mixin gnerator
+
+  @method defineOptionBooleanAttrs
+  @param {Array} options array of possible values for the EnumType
+  @return {Object} Object with computed properties to mixin when extending the
+    Enum class.
+  @private
+*/
+function defineOptionBooleanAttrs(options = []) {
+  return options.reduce((attrs, option) => {
+    let enumOptionBooleanPropertyName = `is${capitalize(camelize(option))}`;
+    set(attrs, enumOptionBooleanPropertyName, equal('value', option));
+    return attrs;
+  }, {});
+}
+
+Enum.reopenClass({
+  /**
+    alters the extend method to define the boolean computed properties based on
+    the options. This requires any mixins to be used first and the normal class
+    definition passed last.
+    @method extend
+    @public
+  */
+  extend(...args) {
+    let definition = args.pop() || {};
+    let optionBooleanAttrs = defineOptionBooleanAttrs(definition.options);
+    definition = Object.assign({}, optionBooleanAttrs, definition);
+    args.push(definition);
+    return this._super(...args);
   }
 });
 
