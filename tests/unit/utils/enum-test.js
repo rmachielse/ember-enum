@@ -5,6 +5,6 @@ module('Unit | Utility | enum');
 
 // Replace this with your real tests.
 test('it works', function(assert) {
-  let result = enumAttr();
+  let result = enumAttr({ options: [] });
   assert.ok(result);
 });
