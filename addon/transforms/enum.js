@@ -7,7 +7,8 @@ const {
   assert,
   computed,
   get,
-  isArray
+  isArray,
+  warn
 } = Ember;
 
 const ENUM_OPTIONS_MUST_BE_DEFINED = `ENUM ERROR: when using the enum data type,
@@ -18,9 +19,9 @@ const SERVER_RETURNED_INVALID_VALUE = `ENUM WARN: Server returned an invalid
 value for the enum. ${ERROR_MESSAGES.INVALID_VALUE}`;
 
 function warnIncorrectValue(options) {
-  errorMsg = SERVER_RETURNED_INVALID_VALUE;
+  let errorMsg = SERVER_RETURNED_INVALID_VALUE;
   errorMsg += options.join(', ');
-  Ember.warn(errorMsg, false, {
+  warn(errorMsg, false, {
     id: 'Ember-Enum.warn-incorrect-server-value',
     url: 'https://github.com/rmachielse/ember-enum'
   });
@@ -43,14 +44,14 @@ export default Transform.extend({
 
     return computed({
       get() {
-        return enumType;
+        return enumObject;
       },
 
       set(key, value) {
         this.propertyWillChange(key);
-        enumType.set('value', value);
+        enumObject.set('value', value);
         this.propertyDidChange(key);
-        return enumType;
+        return enumObject;
       }
     });
   },

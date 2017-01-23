@@ -121,5 +121,5 @@ const ERROR_MESSAGES  = {
   VALUE_READ_ONLY
 };
 
-export ERROR_MESSAGES;
+export { ERROR_MESSAGES };
 export default Enum;
