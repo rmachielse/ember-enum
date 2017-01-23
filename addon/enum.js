@@ -9,9 +9,6 @@ const {
   set
 } = Ember;
 
-const VALUE_READ_ONLY = `This Enum is read only. You cannot change the value`;
-const INVALID_VALUE = `The value of this enum can only be one of the following:`;
-
 /**
   @class Enum
   @extends Ember.Object
@@ -71,16 +68,18 @@ const Enum = EmberObject.extend({
   /**
     @property _defaultValue
     @type String
+    @default null
     @private
   */
-  _defaultValue: '',
+  _defaultValue: null,
 
   /**
     @property _value
     @type String
+    @default null
     @private
   */
-  _value: '',
+  _value: null,
 
   /**
     @method toString
@@ -113,4 +112,14 @@ const Enum = EmberObject.extend({
   }
 });
 
+const VALUE_READ_ONLY = `This Enum is read only. You cannot change the value`;
+
+const INVALID_VALUE   = `The value of this enum can only be one of the following:`;
+
+const ERROR_MESSAGES  = {
+  INVALID_VALUE,
+  VALUE_READ_ONLY
+};
+
+export ERROR_MESSAGES;
 export default Enum;
