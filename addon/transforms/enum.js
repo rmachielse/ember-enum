@@ -6,8 +6,8 @@ import { computedPropertyFromEnum } from 'ember-enum/computed/enum-attr';
 
 const { warn } = Ember;
 
-const SERVER_RETURNED_INVALID_VALUE = `ENUM WARN: Server returned an invalid value for the enum.
-${ERROR_MESSAGES.INVALID_VALUE}`;
+const SERVER_RETURNED_INVALID_VALUE = `ENUM WARN: Server returned an invalid
+value for the enum. ${ERROR_MESSAGES.INVALID_VALUE}`;
 
 function warnIncorrectValue(options) {
   let errorMsg = SERVER_RETURNED_INVALID_VALUE;
@@ -18,7 +18,17 @@ function warnIncorrectValue(options) {
   });
 }
 
+/**
+  @public
+*/
 export default Transform.extend({
+  /**
+    @method deserialize
+    @param serialized
+    @return {ComputedProperty} computed property should return an Enum Type instance
+    @override
+    @public
+  */
   deserialize(serialized, { name, options, defaultValue }) {
     let EnumType   = EnumRegistry.enumFactoryFor(name, options, defaultValue);
     let enumObject = EnumType.create();
@@ -34,6 +44,12 @@ export default Transform.extend({
     return computedPropertyFromEnum(enumObject);
   },
 
+  /**
+    @method serialize
+    @param deserialized
+    @override
+    @public
+  */
   serialize(deserialized) {
     if (deserialized) {
       return deserialized.serialize();
