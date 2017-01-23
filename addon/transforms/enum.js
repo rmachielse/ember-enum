@@ -4,18 +4,16 @@ import createEnumType from 'ember-enum/utils/create-enum-type';
 
 const {
   computed,
-  get,
+  get
 } = Ember;
-
-const ENUM_TYPE_MAP = {};
 
 export default Transform.extend({
   deserialize(serialized, { options = [], defaultValue = null } = {}) {
-    const EnumType = createEnumType(serialized, options, defaultValue);
+    let EnumType = createEnumType(serialized, options, defaultValue);
 
     return computed({
       get() {
-         return EnumType.create({ value: serialized, readOnly: true });
+        return EnumType.create({ value: serialized, readOnly: true });
       },
       set(_key, value) {
         return EnumType.create({ value, readOnly: true });
@@ -24,6 +22,6 @@ export default Transform.extend({
   },
 
   serialize(deserialized) {
-    get(deserialized, 'value') || deserialized.toString();
+    return get(deserialized, 'value') || deserialized.toString();
   }
 });
