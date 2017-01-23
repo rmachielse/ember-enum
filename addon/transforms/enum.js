@@ -47,8 +47,9 @@ export default Transform.extend({
       },
 
       set(key, value) {
+        this.propertyWillChange(key);
         enumType.set('value', value);
-        this.notifyPropertyChange(key);
+        this.propertyDidChange(key);
         return enumType;
       }
     });
