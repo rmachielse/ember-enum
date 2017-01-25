@@ -4,6 +4,6 @@ const { Route } = Ember;
 
 export default Route.extend({
   model() {
-    return this.get('store').createRecord('invitation');
+    return this.get('store').createRecord('party-person');
   }
 });

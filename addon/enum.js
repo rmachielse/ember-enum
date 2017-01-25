@@ -153,7 +153,7 @@ Enum.reopenClass({
   */
   extend(...args) {
     let definition = args.pop() || {};
-    let optionBooleanAttrs = defineOptionBooleanAttrs(definition.options);
+    let optionBooleanAttrs = defineOptionBooleanAttrs(get(definition, 'options'));
     definition = Object.assign({}, optionBooleanAttrs, definition);
     args.push(definition);
     return this._super(...args);

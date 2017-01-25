@@ -2,15 +2,12 @@ import Ember from 'ember';
 import Transform from 'ember-data/transform';
 import EnumRegistry from 'ember-enum/enum-registry';
 import { ERROR_MESSAGES } from 'ember-enum/enum';
-import { computedPropertyFromEnum } from 'ember-enum/computed/enum-attr';
 
-const { warn } = Ember;
+const { warn, get } = Ember;
 
-const SERVER_RETURNED_INVALID_VALUE = `ENUM WARN: Server returned an invalid
-value for the enum. ${ERROR_MESSAGES.INVALID_VALUE}`;
-
-function warnIncorrectValue(options) {
-  let errorMsg = SERVER_RETURNED_INVALID_VALUE;
+function warnIncorrectValue(value, options) {
+  let errorMsg = `ENUM WARN: Server returned an invalid
+  value for the enum: ${value}. ${ERROR_MESSAGES.INVALID_VALUE}`;
   errorMsg += options.join(', ');
   warn(errorMsg, false, {
     id: 'Ember-Enum.warn-incorrect-server-value',
@@ -34,6 +31,9 @@ export default Transform.extend({
     let enumObject = EnumType.create();
     let value      = serialized;
 
+    options = get(enumObject, 'options');
+    defaultValue = get(enumObject, 'defaultValue');
+
     if (!enumObject.isValidOption(value)) {
       warnIncorrectValue(serialized, options);
       value = defaultValue || options[0];
@@ -41,7 +41,7 @@ export default Transform.extend({
 
     enumObject.set('value', value);
 
-    return computedPropertyFromEnum(enumObject);
+    return enumObject;
   },
 
   /**

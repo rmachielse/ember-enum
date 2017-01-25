@@ -12,9 +12,17 @@ const {
 
 // TODO: use Ember container to register and lookup Enum definitions
 // registration should be done at initialization time.
-const ENUM_TYPE_MAP = {};
+let ENUM_TYPE_MAP = {};
 
 const EnumRegistry = {
+  /**
+    Injected by the initializer. Used to lookup explicitly defined enum classes
+
+    @property container
+    @private
+  */
+  container: undefined,
+
   /**
    lookup the Enum Type class
 
@@ -51,6 +59,16 @@ const EnumRegistry = {
     }
 
     return ENUM_TYPE_MAP[name] = EnumType;
+  },
+
+  /**
+    Clear all registrations
+
+    @method clear
+    @public
+  */
+  clear() {
+    ENUM_TYPE_MAP = {};
   },
 
   /**
