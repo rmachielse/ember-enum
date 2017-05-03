@@ -1,10 +1,6 @@
-/* jshint node: true */
+/* eslint-env node */
 'use strict';
 
 module.exports = {
-  name: 'ember-enum',
-
-  isDevelopingAddon: function() {
-    return true;
-  }
+  name: 'ember-enum'
 };
